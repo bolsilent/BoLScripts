@@ -1,0 +1,25 @@
+--[[GarenUlt]]--
+
+if GetMyHero().charName ~= "Garen" then return end
+function OnLoad()
+  UltConfig = scriptConfig("Garen","GarenUlt")
+  UltConfig:addParam("Ult","AutoUlt", SCRIPT_PARAM_ONOFF, true)
+  UltConfig:addParam("drawRrange","Show Ult Range", SCRIPT_PARAM_ONOFF, true)
+end
+function OnTick()
+    if not myHero.dead and UltConfig.Ult and myHero:CanUseSpell(_R) == READY then
+      for i=1, heroManager.iCount do
+        local enemy = heroManager:GetHero(i)
+        local ultdmg = getDmg("R",enemy,myHero,3)
+		if not enemy.dead and enemy.team ~= myHero.team and ultdmg > enemy.health and GetDistance(enemy)<400 then 
+		      CastSpell(_R,enemy)
+        end
+      end
+    end
+end
+
+function OnDraw()
+        if UltConfig.drawRrange then
+            DrawCircle(player.x, player.y, player.z, 400, 0x00FF00)               
+        end
+end

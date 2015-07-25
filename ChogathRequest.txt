@@ -1,0 +1,164 @@
+_G.Update = true
+local UPDATE_SCRIPT_NAME = "Chogath"
+local UPDATE_HOST = "bitbucket.org"
+local UPDATE_BitBucket_USER = "BoLSilent"
+local UPDATE_BitBucket_FOLDER = "Scripts"
+local UPDATE_BitBucket_FILE = "Chogath.lua"
+local UPDATE_PATH = "/"..UPDATE_BitBucket_USER.."/"..UPDATE_BitBucket_FOLDER.."/raw/master/"..UPDATE_BitBucket_FILE
+local UPDATE_FILE_PATH = SCRIPT_PATH..GetCurrentEnv().FILE_NAME
+local UPDATE_URL = "https://"..UPDATE_HOST..UPDATE_PATH
+
+local ServerData
+if _G.Update then
+	GetAsyncWebResult(UPDATE_HOST, UPDATE_PATH, function(d) ServerData = d end)
+	function update()
+		if ServerData ~= nil then
+			local ServerVersion
+			local send, tmp, sstart = nil, string.find(ServerData, "local version = \"")
+			if sstart then
+				send, tmp = string.find(ServerData, "\"", sstart+1)
+			end
+			if send then
+				ServerVersion = tonumber(string.sub(ServerData, sstart+1, send-1))
+			end
+
+			if ServerVersion ~= nil and tonumber(ServerVersion) ~= nil and tonumber(ServerVersion) > tonumber(version) then
+				DownloadFile(UPDATE_URL.."?nocache"..myHero.charName..os.clock(), UPDATE_FILE_PATH, function () print("<font color=\"#FF0000\"><b>"..UPDATE_SCRIPT_NAME..":</b> successfully updated. ("..version.." => "..ServerVersion..")</font>") end)     
+			elseif ServerVersion then
+				print("<font color=\"#FF0000\"><b>"..UPDATE_SCRIPT_NAME..":</b> You have got the latest version: <u><b>"..ServerVersion.."</b></u></font>")
+			end		
+			ServerData = nil
+		end
+	end
+	AddTickCallback(update)
+end
+
+require "VPrediction"
+        local VP = nil
+
+local qRange, wRange, eRange  = 950, 700, 500 
+
+
+function OnLoad()
+VP = VPrediction()
+Config = scriptConfig("ChoGath","vk")
+Config:addSubMenu("Basic Settings", "Basic")
+Config:addSubMenu("Draw Settings", "Draw")
+
+--> Basic Settings
+Config.Basic:addParam("doCombo", "Q W combo", SCRIPT_PARAM_ONKEYDOWN, false, 32)
+Config.Basic:addParam("usew", "Use w in Combo", SCRIPT_PARAM_ONOFF, true)
+Config.Basic:addParam("autoult", "Use Ult to kill", SCRIPT_PARAM_ONOFF, true)
+
+
+--> Draw Settings
+Config.Draw:addParam("drawQ", "Draw Q Range", SCRIPT_PARAM_ONOFF, true)
+Config.Draw:addParam("drawW", "Draw W Range", SCRIPT_PARAM_ONOFF, true)
+Config.Draw:addParam("drawE", "Draw E Range", SCRIPT_PARAM_ONOFF, true)
+ts = TargetSelector(TARGET_LESS_CAST_PRIORITY, qRange, DAMAGE_MAGIC, true)
+Config:addTS(ts)
+
+key = 32
+KEY_DOWN = 0x100
+KEY_UP = 0x101
+player = GetMyHero()
+PrintChat(" >> Silent ChoGath v2 Loaded")
+--ignite = ((myHero:GetSpellData(SUMMONER_1).name:find("SummonerDot") and SUMMONER_1) or (myHero:GetSpellData(SUMMONER_2).name:find("SummonerDot") and SUMMONER_2) or nil)
+end
+
+function autoult()
+        if RREADY then
+                local rDmg = 0    
+                for i = 1, heroManager.iCount, 1 do
+                        local enemyhero = heroManager:getHero(i)
+                        if ValidTarget(enemyhero, (200)) then
+                                rDmg = getDmg("R", enemyhero, myHero)
+                                if enemyhero.health <= rDmg then
+                                        CastSpell(_R, enemyhero)
+                                end
+                        end
+                end
+        end
+end
+
+	function castQ(target)
+        for i, target in pairs(GetEnemyHeroes()) do
+            local CastPosition,  HitChance,  Position = VP:GetCircularCastPosition(target, 0.625, 175, 950)
+            if HitChance >= 2 and GetDistance(CastPosition) < 950 and not target.dead and ValidTarget(ts.target, qRange) then
+                CastSpell(_Q, CastPosition.x, CastPosition.z)
+            end
+        end
+    end
+
+
+            
+            
+            
+function castW(target)
+	for i, target in pairs(GetEnemyHeroes()) do
+        CastPosition,  HitChance,  Position = VP:GetLineCastPosition(myHero, 0.4, 125, wRange, 2000, myHero, false)
+            if HitChance >= 2 or 3 and GetDistance(CastPosition) < 650 and not target.dead and ValidTarget(ts.target, qRange) then 
+						CastSpell(_W, CastPosition.x, CastPosition.z)
+			end
+	end
+end
+	
+
+
+function doCombo()
+	if ts.target then 
+		if QREADY then
+			castQ(ts.target)
+		end
+		if WREADY and Config.Basic.usew then
+			castW(myHero)
+		end
+	end
+end
+
+
+function Checks()
+QREADY = ((myHero:CanUseSpell(_Q) == READY) or (myHero:GetSpellData(_Q).level > 0 and myHero:GetSpellData(_Q).currentCd <= 0.4)) 
+WREADY = ((myHero:CanUseSpell(_W) == READY) or (myHero:GetSpellData(_W).level > 0 and myHero:GetSpellData(_W).currentCd <= 0.4))
+RREADY = ((myHero:CanUseSpell(_R) == READY) or (myHero:GetSpellData(_R).level > 0 and myHero:GetSpellData(_R).currentCd <= 0.4))
+IREADY = (ignite ~= nil and myHero:CanUseSpell(ignite) == READY)
+ts:update()
+end
+
+
+
+
+
+function OnTick()
+Checks()
+	if ts.target then
+
+		if Config.Basic.doCombo then
+			doCombo()
+		end
+		if Config.Basic.autoult then 
+			autoult()
+		end
+	end 
+end
+
+function OnWndMsg( msg, keycode )
+
+if keycode == key and msg ==  KEY_DOWN then		
+	player:MoveTo(mousePos.x, mousePos.z)
+end
+end
+
+
+function OnDraw()
+	if Config.Draw.drawQ then
+		DrawCircle(myHero.x, myHero.y, myHero.z, qRange, 0xFFFF0000)
+	end
+	if Config.Draw.drawW then
+		DrawCircle(myHero.x, myHero.y, myHero.z, wRange, 0xFFFF0000)
+	end
+	if Config.Draw.drawE then
+		DrawCircle(myHero.x, myHero.y, myHero.z, eRange, 0xFFFF0000)
+	end
+	end
+	
