@@ -1,37 +1,3 @@
-_G.Update = true
-local UPDATE_SCRIPT_NAME = "SilentGangplank"
-local UPDATE_HOST = "bitbucket.org"
-local UPDATE_BitBucket_USER = "BoLSilent"
-local UPDATE_BitBucket_FOLDER = "Scripts"
-local UPDATE_BitBucket_FILE = "SilentGangplank.lua"
-local UPDATE_PATH = "/"..UPDATE_BitBucket_USER.."/"..UPDATE_BitBucket_FOLDER.."/raw/master/"..UPDATE_BitBucket_FILE
-local UPDATE_FILE_PATH = SCRIPT_PATH..GetCurrentEnv().FILE_NAME
-local UPDATE_URL = "https://"..UPDATE_HOST..UPDATE_PATH
-
-local ServerData
-if _G.Update then
-	GetAsyncWebResult(UPDATE_HOST, UPDATE_PATH, function(d) ServerData = d end)
-	function update()
-		if ServerData ~= nil then
-			local ServerVersion
-			local send, tmp, sstart = nil, string.find(ServerData, "local version = \"")
-			if sstart then
-				send, tmp = string.find(ServerData, "\"", sstart+1)
-			end
-			if send then
-				ServerVersion = tonumber(string.sub(ServerData, sstart+1, send-1))
-			end
-
-			if ServerVersion ~= nil and tonumber(ServerVersion) ~= nil and tonumber(ServerVersion) > tonumber(version) then
-				DownloadFile(UPDATE_URL.."?nocache"..myHero.charName..os.clock(), UPDATE_FILE_PATH, function () print("<font color=\"#FF0000\"><b>"..UPDATE_SCRIPT_NAME..":</b> successfully updated. ("..version.." => "..ServerVersion..")</font>") end)     
-			elseif ServerVersion then
-				print("<font color=\"#FF0000\"><b>"..UPDATE_SCRIPT_NAME..":</b> You have got the latest version: <u><b>"..ServerVersion.."</b></u></font>")
-			end		
-			ServerData = nil
-		end
-	end
-	AddTickCallback(update)
-end
 
 
 if myHero.charName ~= "Gangplank" then return end
@@ -54,8 +20,6 @@ function OnLoad()
 	Config.healSettings:addParam("autoHealP", "Heal under %", 4,0.7,0,1,2)
 	Config.healSettings:addParam("autoHealS", "Auto Heal on Stun", SCRIPT_PARAM_ONOFF, true)
 	
-	Config:addSubMenu("E Settings", "esettings")
-	Config.esettings:addParam("AutoE", "Auto E Allies", SCRIPT_PARAM_ONOFF, true)
 	--Config.esettings:addParam("enumber", "Auto E #", SCRIPT_PARAM_SLICE, 2, 0, 5, 0)
 	
 	Config:addSubMenu("Ultimate Settings", "ultsettings")
@@ -64,7 +28,6 @@ function OnLoad()
 	
     Config:addSubMenu("Draw Circles", "drawcircle")
 	Config.drawcircle:addParam("qrange", "Draw Q Range", SCRIPT_PARAM_ONOFF, true)
-	Config.drawcircle:addParam("erange", "Draw E Range", SCRIPT_PARAM_ONOFF, true)
 	ts = TargetSelector(TARGET_LOW_HP_PRIORITY, math.huge, DAMAGE_PHYSICAL)
 	enemyMinions = minionManager(MINION_ENEMY, 625, MyHero, MINION_SORT_HEALTH_ASC)
 	Config:addTS(ts)
@@ -84,17 +47,14 @@ Checks()
 	if Config.drawcircle.qrange and QREADY then
 		DrawCircle(myHero.x, myHero.y, myHero.z, 625, 0xFFFF0000)
 	end
-	if Config.drawcircle.erange and EREADY then
-		DrawCircle(myHero.x, myHero.y, myHero.z, 1300, 0xFFFF0000)
-		
-	end
+	
 end
 
 function OnTick()
 Checks()
 QHarass()
 QFarm()
-autoE()
+
 ultcount()
 ultKS()
 autoheal()
