@@ -196,6 +196,8 @@ end
 
 function Menu()
 BardMenu = scriptConfig("Bard Remastered", "BardLOL")
+	BardMenu:addSubMenu("chimecollector", "chimes")
+	BardMenu.chimes:addParam("chimes", "Collect Random Chimes(afk)", SCRIPT_PARAM_ONOFF, true)
 	BardMenu:addSubMenu("Combo Settings", "combo")
 		BardMenu.combo:addParam("qMana", "Use Q combo if  mana is above", SCRIPT_PARAM_SLICE, 5, 0, 101, 0) 
 		BardMenu.combo:addParam("bush", "Ward bush when they hide", SCRIPT_PARAM_ONOFF, true)
@@ -289,7 +291,8 @@ function OnTick()
 			lastpos [ c.networkID ] = Vector(c) 
 			lasttime[ c.networkID ] = os.clock() 
 		end
-	end
+end
+	if BardMenu.chimes.chimes then BardCollect() end
 end
 function exhFunction(unit)
 	moveToCursor()
@@ -358,7 +361,21 @@ function GetCustomTarget()
 		return nil
 	end
 end
+local c = 0
+function BardCollect()
+	c = c + 1
+	if c > 200 then
+		c = 0
+		for k=1,objManager.maxObjects,1 do
+			local object = objManager:getObject(k)
+			if object and object.valid and object.name and object.team == myHero.team and object.name == "BardChimeMinion" then
+				myHero:MoveTo(object.x, object.z)
+				return
+			end
+		end
+	end
 
+end
 function OnDraw()
 	if Debug then
 		if vPred then
