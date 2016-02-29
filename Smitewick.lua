@@ -6,8 +6,7 @@ add peel for most AD teammate
 ]]--
 
 if myHero.charName ~= "Warwick" then return end
-require "VPrediction"
-require "SOW"
+
 local qrange = 400
 local wrange = 1250
 local rrange = 700
@@ -50,16 +49,13 @@ PrintChat(">> Loaded Smitewick V2 by Silent Man..Cleaner Menu+More customization
 	ww.draw:addParam("drawq", "Draw Q", SCRIPT_PARAM_ONOFF, true)
 	ww.draw:addParam("drawr", "Draw R", SCRIPT_PARAM_ONOFF, true)
 	ww.draw:addParam("drawsmite", "Draw Smite Range", SCRIPT_PARAM_ONOFF, false)]]--
-	
+	ww:addSubMenu("Orbwalker Settings", "Orbwalking")
 	ww.smitesettings:permaShow("smiteult")
 	
 	--ww:addParam("savelife", "Safe Life with Q", SCRIPT_PARAM_ONOFF, false)
-	ww:addSubMenu("Orbwalker", "orbwalker")
-
-	VP = VPrediction(true)
-	SOW = SOW(VP)
-	SOW:LoadToMenu(ww.orbwalker)
 	
+
+
 	ts = TargetSelector(TARGET_LOW_HP, 760, DAMAGE_PHYSICAL)
   ts.name = "Warwick"
   ww:addTS(ts)
@@ -67,8 +63,30 @@ PrintChat(">> Loaded Smitewick V2 by Silent Man..Cleaner Menu+More customization
 	elseif myHero:GetSpellData(SUMMONER_2).name:lower():find("smite") then SmiteSlot = SUMMONER_2
 	else SmiteSlot = nil
 	end
+DelayAction(CheckOrbwalk, 8)
 
+end
 
+ function CheckOrbwalk()
+	 if _G.Reborn_Loaded and not _G.Reborn_Initialised then
+        DelayAction(CheckOrbwalk, 1)
+    elseif _G.Reborn_Initialised then
+        sacused = true
+		ww.Orbwalking:addParam("info11","SAC Detected", SCRIPT_PARAM_INFO, "")
+    elseif _G.MMA_Loaded then
+		ww.Orbwalking:addParam("info11","MMA Detected", SCRIPT_PARAM_INFO, "")
+		mmaused = true
+	else
+		require "SxOrbWalk"
+		SxOrb:LoadToMenu(ww.Orbwalking, false) 
+		sxorbused = true
+		SxOrb:RegisterAfterAttackCallback(MyAfterAttack)
+		DelayAction(function()		
+			if SxOrb.Version < 2.3 then
+				Print("Your SxOrbWalk library is outdated, please get the latest version!")
+			end
+		end, 5)
+	end
 end
 
 function Checks()
