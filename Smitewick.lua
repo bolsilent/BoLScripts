@@ -24,8 +24,8 @@ local QREADY, WREADY, EREADY, RREADY = false, false, false, false
 
 
 function OnLoad()
-PrintChat(">> Loaded Smitewick V2 by Silent Man..Cleaner Menu+More customization")
-	VP = VPrediction()
+PrintChat(">> Loaded Smitewick V3 by Silent Man.)
+
 	ww = scriptConfig("Smitewick", "IfYouReadThisBuyMeAPizza")
 	
 	ww:addSubMenu("ComboSettings" , "comboConfig")
