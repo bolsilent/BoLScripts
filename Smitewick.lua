@@ -24,7 +24,7 @@ local QREADY, WREADY, EREADY, RREADY = false, false, false, false
 
 
 function OnLoad()
-PrintChat(">> Loaded Smitewick V3 by Silent Man.)
+PrintChat(">> Loaded Smitewick V3 by Silent Man.")
 
 	ww = scriptConfig("Smitewick", "IfYouReadThisBuyMeAPizza")
 	
