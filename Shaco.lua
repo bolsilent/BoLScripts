@@ -509,27 +509,4 @@ function Qspots()
 --end
 end
 
---[[
-function ShadowVayne:WallTumble()
-    if myHero:CanUseSpell(_Q) ~= 0 then
-        self.Menu.keysetting.MidTumble = false
-        self.Menu.keysetting.DrakeTumble = false
-        return
-    end
-    if self.Menu.keysetting.MidTumble then
-        if myHero.x == 6962 and myHero.z == 8952 then
-            self.Menu.keysetting.MidTumble = false
-            CastSpell(_Q,6667.3271484375,8794.64453125)
-        else
-            myHero:MoveTo(6962, 8952)
-        end
-    end
-    if self.Menu.keysetting.DrakeTumble then
-        if myHero.x == 12060 and myHero.z == 4806 then
-            self.Menu.keysetting.DrakeTumble = false
-            CastSpell(_Q,11745.198242188,4625.4379882813)
-        else
-            myHero:MoveTo(12060, 4806)
-        end
-    end
-end]]--
+
